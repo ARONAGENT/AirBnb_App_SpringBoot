@@ -20,10 +20,10 @@ public class Hotel {
     @Column(nullable = false)
     private String name;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT[]")
     private String[] photos;
 
-    @Column(columnDefinition ="JSON")
+    @Column(columnDefinition = "TEXT[]")
     private String[] amenities;
 
     @CreationTimestamp
@@ -35,5 +35,9 @@ public class Hotel {
     @Embedded
     private HotelContactInfo contactInfo;
 
-    private Boolean Active;
+    @Column(nullable = false)
+    private Boolean active;
+
+    @ManyToOne
+    private User owner;
 }

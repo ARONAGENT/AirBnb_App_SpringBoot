@@ -35,10 +35,10 @@ public class Room {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT[]")
     private String[] photos;
 
-    @Column(columnDefinition ="JSON")
+    @Column(columnDefinition ="TEXT[]")
     private String[] amenities;
 
     private Integer totalCount;
