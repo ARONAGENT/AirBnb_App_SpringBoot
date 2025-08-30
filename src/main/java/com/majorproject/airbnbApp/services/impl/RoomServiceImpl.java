@@ -6,6 +6,7 @@ import com.majorproject.airbnbApp.entities.Room;
 import com.majorproject.airbnbApp.exceptions.ResourceNotFoundException;
 import com.majorproject.airbnbApp.repositories.HotelRepository;
 import com.majorproject.airbnbApp.repositories.RoomRepository;
+import com.majorproject.airbnbApp.services.InventoryService;
 import com.majorproject.airbnbApp.services.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
-//    private final InventoryService inventoryService;
+    private final InventoryService inventoryService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -35,9 +36,9 @@ public class RoomServiceImpl implements RoomService {
         room.setHotel(hotel);
         room = roomRepository.save(room);
 
-//        if (hotel.getActive()) {
-//            inventoryService.initializeRoomForAYear(room);
-//        }
+        if (hotel.getActive()) {
+            inventoryService.initializedRoomForAYear(room);
+        }
 
         return modelMapper.map(room, RoomDto.class);
     }
@@ -71,7 +72,7 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository
                 .findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: "+roomId));
-//        inventoryService.deleteFutureInventories(room);
+        inventoryService.deleteAllInventories(room);
         roomRepository.deleteById(roomId);
     }
 }
