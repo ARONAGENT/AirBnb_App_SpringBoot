@@ -25,6 +25,9 @@ public class Payment {
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
+    @Column(nullable = false ,precision = 10,scale = 2)
+    private BigDecimal amount;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -34,6 +37,9 @@ public class Payment {
     @Column(nullable = false,precision = 10,scale = 2)
     private BigDecimal price;
 
+
+    @OneToOne(fetch=FetchType.LAZY)
+    private Booking booking;
 
 
 }

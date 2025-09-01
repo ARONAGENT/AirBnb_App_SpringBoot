@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = "/hotel")
+@RequestMapping(path = "admin/hotel")
 @RequiredArgsConstructor
 @Slf4j
 public class HotelController {
