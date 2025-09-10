@@ -8,6 +8,7 @@ import com.majorproject.airbnbApp.entities.enums.BookingStatus;
 import lombok.Data;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -15,8 +16,8 @@ import java.util.Set;
 public class BookingDto {
 
     private Long id;
-    private LocalDateTime checkInDate;
-    private LocalDateTime checkOutDate;
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
     private Integer roomCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
