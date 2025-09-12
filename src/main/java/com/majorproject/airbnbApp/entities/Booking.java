@@ -22,15 +22,15 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id",nullable = false)
     private Hotel hotel;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id",nullable = false)
     private Room room;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
@@ -61,5 +61,8 @@ public class Booking {
     inverseJoinColumns =@JoinColumn(name =  "guest_id"))
     private Set<Guest> guests;
 
+
+    @Column(unique = true)
+    private String paymentSessionId;
 
 }
