@@ -12,6 +12,7 @@ import com.majorproject.airbnbApp.exceptions.UnAuthorisedException;
 import com.majorproject.airbnbApp.repositories.*;
 import com.majorproject.airbnbApp.services.BookingService;
 import com.majorproject.airbnbApp.services.CheckoutService;
+import com.majorproject.airbnbApp.strategy.PricingService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
@@ -47,8 +48,7 @@ public class BookingServiceImpl implements BookingService {
     private final ModelMapper modelMapper;
     private final GuestRepository guestRepository;
     private final CheckoutService checkoutService;
-    private final UserRepository userRepository;
-
+    private final PricingService pricingService;
 
     @Override
     @Transactional
@@ -68,19 +68,13 @@ public class BookingServiceImpl implements BookingService {
 
         long daysCount= ChronoUnit.DAYS.between(bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate())+1;
 
-        if(inventoryList.size() != daysCount){
-            throw  new IllegalStateException("Room is not available");
-        }
 
-        // Reserved the room
+        // Reserve the room/ update the booked count of inventories
+        inventoryRepository.initBooking(room.getId(), bookingRequest.getCheckInDate(),
+                bookingRequest.getCheckOutDate(), bookingRequest.getRoomsCount());
 
-        for (Inventory inventory: inventoryList){
-            inventory.setReservedCount(inventory.getReservedCount()+bookingRequest.getRoomsCount());
-        }
-        inventoryRepository.saveAll(inventoryList);
-
-
-        //create  user// Calculate Dynamic Price ... later
+        BigDecimal priceForOneRoom = pricingService.calculateTotalPrice(inventoryList);
+        BigDecimal totalPrice = priceForOneRoom.multiply(BigDecimal.valueOf(bookingRequest.getRoomsCount()));
 
         // Initialized Booking
         User user=getCurrentUser();
@@ -92,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
                 .checkOutDate(bookingRequest.getCheckOutDate())
                 .user(user)
                 .roomCount(bookingRequest.getRoomsCount())
-                .amount(BigDecimal.TEN)
+                .amount(totalPrice)
                 .build();
 
         bookingRepository.save(booking);
