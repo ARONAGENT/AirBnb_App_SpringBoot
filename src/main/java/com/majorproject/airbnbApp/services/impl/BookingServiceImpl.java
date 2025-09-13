@@ -12,9 +12,12 @@ import com.majorproject.airbnbApp.exceptions.UnAuthorisedException;
 import com.majorproject.airbnbApp.repositories.*;
 import com.majorproject.airbnbApp.services.BookingService;
 import com.majorproject.airbnbApp.services.CheckoutService;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
+import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -133,6 +136,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public String initiatePayments(Long bookingId) {
         Booking booking=bookingRepository.findById(bookingId).orElseThrow(()-> new ResourceNotFoundException("Booking Id Not Found With id"+bookingId));
         User user= getCurrentUser();
@@ -178,6 +182,41 @@ public class BookingServiceImpl implements BookingService {
             log.info("Successfully confirmed the booking for Booking ID: {}", booking.getId());
         } else {
             log.warn("Unhandled event type: {}", event.getType());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void cancelBooking(Long bookingId) {
+        Booking booking=bookingRepository.findById(bookingId).orElseThrow(()-> new ResourceNotFoundException("Booking Id Not Found With id"+bookingId));
+        User user= getCurrentUser();
+        if (!user.equals(booking.getUser())) {
+            throw new UnAuthorisedException("Booking does not belong to this user with id: "+user.getId());
+        }
+
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
+            throw new IllegalStateException("Booking has already expired");
+        }
+
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        inventoryRepository.findAndLockReservedInventory(booking.getRoom().getId(), booking.getCheckInDate(),
+                booking.getCheckOutDate(), booking.getRoomCount());
+
+        inventoryRepository.cancelBooking(booking.getRoom().getId(), booking.getCheckInDate(),
+                booking.getCheckOutDate(), booking.getRoomCount());
+
+
+        try {
+            Session session = Session.retrieve(booking.getPaymentSessionId());
+            RefundCreateParams refundParams = RefundCreateParams.builder()
+                    .setPaymentIntent(session.getPaymentIntent())
+                    .build();
+
+            Refund.create(refundParams);
+        } catch (StripeException e) {
+            throw new RuntimeException(e);
         }
     }
 
