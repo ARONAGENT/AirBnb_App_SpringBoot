@@ -1,13 +1,19 @@
 package com.majorproject.airbnbApp.advice;
 
+import com.majorproject.airbnbApp.exceptions.InvalidPayloadException;
 import com.majorproject.airbnbApp.exceptions.ResourceNotFoundException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -52,6 +58,23 @@ public class GlobalExceptionHandler {
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.FORBIDDEN)
                 .message(ex.getMessage())
+                .build();
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> validationError(MethodArgumentNotValidException exception){
+        List<String> errors= exception
+                .getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(error ->error.getDefaultMessage() )
+                .collect(Collectors.toList());
+        ApiError apiError=ApiError
+                .builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message("Input Validation Error")
+                .subErrors(errors)
                 .build();
         return buildErrorResponseEntity(apiError);
     }
