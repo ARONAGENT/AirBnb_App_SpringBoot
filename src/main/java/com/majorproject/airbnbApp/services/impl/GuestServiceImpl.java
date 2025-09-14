@@ -28,9 +28,16 @@ public class GuestServiceImpl implements GuestService {
     public List<GuestDto> getAllGuests() {
         User user = getCurrentUser();
         log.info("Fetching all guests of user with id: {}", user.getId());
+
         List<Guest> guests = guestRepository.findByUser(user);
+
         return guests.stream()
-                .map(guest -> modelMapper.map(guest, GuestDto.class))
+                .map(guest -> GuestDto.builder()
+                        .id(guest.getId())
+                        .name(guest.getName())
+                        .gender(guest.getGender())
+                        .age(guest.getAge())
+                        .build())
                 .collect(Collectors.toList());
     }
 

@@ -35,6 +35,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -273,9 +274,28 @@ public class BookingServiceImpl implements BookingService {
         User user = getCurrentUser();
 
         return bookingRepository.findByUser(user)
-                .stream().
-                map((element) -> modelMapper.map(element, BookingDto.class))
-                .collect(Collectors.toList());
+                .stream()
+                .map(booking -> BookingDto.builder()
+                        .id(booking.getId())
+                        .bookingStatus(booking.getBookingStatus())
+                        .createdAt(booking.getCreatedAt())
+                        .updatedAt(booking.getUpdatedAt())
+                        .amount(booking.getAmount())
+                        .checkInDate(booking.getCheckInDate())
+                        .checkOutDate(booking.getCheckOutDate())
+                        .roomCount(booking.getRoomCount())
+                        .guests(
+                                booking.getGuests().stream()
+                                        .map(guest -> GuestDto.builder()
+                                                .id(guest.getId())
+                                                .name(guest.getName())
+                                                .gender(guest.getGender())
+                                                .age(guest.getAge())
+                                                .build())
+                                        .collect(Collectors.toSet())
+                        )
+                        .build()
+                ).toList();
     }
 
     private Session retrieveSessionFromEvent(Event event) {
