@@ -35,7 +35,7 @@ public class GuestServiceImpl implements GuestService {
                 .map(guest -> GuestDto.builder()
                         .id(guest.getId())
                         .name(guest.getName())
-                        .gender(guest.getGender())
+                        .gender(String.valueOf(guest.getGender()))
                         .age(guest.getAge())
                         .build())
                 .collect(Collectors.toList());

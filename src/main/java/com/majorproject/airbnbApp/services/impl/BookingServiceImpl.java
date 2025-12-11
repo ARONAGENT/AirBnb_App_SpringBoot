@@ -289,7 +289,7 @@ public class BookingServiceImpl implements BookingService {
                                         .map(guest -> GuestDto.builder()
                                                 .id(guest.getId())
                                                 .name(guest.getName())
-                                                .gender(guest.getGender())
+                                                .gender(String.valueOf(guest.getGender()))
                                                 .age(guest.getAge())
                                                 .build())
                                         .collect(Collectors.toSet())
