@@ -88,7 +88,7 @@ Built with modern software engineering principles, this application showcases JW
 
 | # | Screenshot | Description |
 |---|------------|-------------|
-| 0 | ![ER Diagram](https://github.com/user-attachments/assets/e49b2feb-0b23-41a7-9cf5-98490e82c5c8) | **ER Diagram** - Database schema |
+| 0 | <img width="1202" height="835" alt="0 0 ER Diagram11" src="https://github.com/user-attachments/assets/2beda9a9-532a-4707-81bb-b579371ef097" /> | **ER Diagram** - Database schema |
 | 1 | ![Handles Input Validation](https://github.com/user-attachments/assets/2ec6b1b6-c735-4391-9351-2d8ab3819619) | **Handles Input Validation** - Request validation |
 | 2 | ![signUp the User](https://github.com/user-attachments/assets/7d465115-abe8-4bc5-882a-468748f19a5e) | **User Signup** - Registration flow |
 | 3 | ![Login the User to Get Access the Token](https://github.com/user-attachments/assets/de9d6a8d-7b51-4510-80c0-503a0fd0f016) | **User Login** - JWT authentication |
