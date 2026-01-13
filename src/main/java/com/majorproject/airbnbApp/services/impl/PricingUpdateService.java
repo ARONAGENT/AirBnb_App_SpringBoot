@@ -33,10 +33,19 @@ public class PricingUpdateService {
     private final InventoryRepository inventoryRepository;
     private final HotelMinPriceRepository hotelMinPriceRepository;
     private final PricingService pricingService;
+    private boolean firstRun = true;
+
 
 //    @Scheduled(cron = "*/5 * * * * *")
 //    @Scheduled(cron = "0 0 * * * *")
     public void updatePrices() {
+        if (firstRun) {
+            log.info("Pricing Cron Job STARTED (First Run)");
+            firstRun = false;
+        } else {
+            log.info("Pricing Cron Job running (5 min interval)");
+        }
+
         int page = 0;
         int batchSize = 100;
 
@@ -49,6 +58,7 @@ public class PricingUpdateService {
 
             page++;
         }
+        log.info("✅ Pricing Cron Job completed");
     }
 
     private void updateHotelPrices(Hotel hotel) {
