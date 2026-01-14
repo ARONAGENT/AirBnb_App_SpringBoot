@@ -112,6 +112,11 @@ https://github.com/user-attachments/assets/8455f206-9942-4fa8-a631-ed89ba7fb948
 
 https://github.com/user-attachments/assets/52312b78-292f-4bfd-bd1a-164d6b09dab9
 
+- **Dynamic Pricing WorkFlow - Decorator Pattern** - Every Rooms have 90 days Pricing Update Strategies
+     
+https://github.com/user-attachments/assets/43f68082-e5ad-4441-adf0-93b52420a1d5
+
+
 
 ---
 
