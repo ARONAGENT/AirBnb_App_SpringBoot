@@ -2,8 +2,8 @@ package com.majorproject.airbnbApp.services;
 
 import com.majorproject.airbnbApp.dtos.BookingDto;
 import com.majorproject.airbnbApp.dtos.BookingRequest;
-import com.majorproject.airbnbApp.dtos.GuestDto;
 import com.majorproject.airbnbApp.dtos.HotelReportDto;
+import com.majorproject.airbnbApp.entities.enums.BookingStatus;
 import com.stripe.model.Event;
 
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ public interface BookingService {
 
     BookingDto initializedBooking(BookingRequest bookingRequest);
 
-    BookingDto addGuests(Long bookingId, List<GuestDto> guestIdList);
+    BookingDto addGuests(Long bookingId, List<Long> guestIdList);
 
     String initiatePayments(Long bookingId);
 
@@ -26,4 +26,8 @@ public interface BookingService {
     HotelReportDto getHotelReport(Long hotelId, LocalDate startDate, LocalDate endDate);
 
     List<BookingDto> getMyBookings();
+
+    BookingDto getMyBookingsById(Long id);
+
+    BookingStatus getBookingStatus(Long bookingId);
 }

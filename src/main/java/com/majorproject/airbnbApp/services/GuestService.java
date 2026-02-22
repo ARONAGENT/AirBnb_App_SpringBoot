@@ -12,4 +12,6 @@ public interface GuestService {
     void deleteGuest(Long guestId);
 
     GuestDto addNewGuest(GuestDto guestDto);
+
+    GuestDto getGuestById(Long guestId);
 }

@@ -6,13 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GuestDto {
+public class GuestDto implements Serializable {
     private Long id;
     @NotBlank(message = "Name is required")
     private String name;

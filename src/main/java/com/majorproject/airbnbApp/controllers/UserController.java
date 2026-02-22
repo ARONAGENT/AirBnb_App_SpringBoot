@@ -28,6 +28,9 @@ public class UserController {
     @Operation(summary = "Update user profile", description = "Updates the profile details of the currently logged-in user")
     public ResponseEntity<Void> updateProfile(@RequestBody ProfileUpdateRequestDto profileUpdateRequestDto) {
         userService.updateProfile(profileUpdateRequestDto);
+        System.out.println(profileUpdateRequestDto.getName());
+        System.out.println(profileUpdateRequestDto.getDateOfBirth());
+        System.out.println(profileUpdateRequestDto.getGender());
         return ResponseEntity.noContent().build();
     }
 
@@ -36,6 +39,13 @@ public class UserController {
     public ResponseEntity<List<BookingDto>> getMyBookings() {
         return ResponseEntity.ok(bookingService.getMyBookings());
     }
+
+    @GetMapping("/bookings/{bookingId}")
+    @Operation(summary = "Get my bookings By Id", description = "Fetches a bookings by ID made by the current user")
+    public ResponseEntity<BookingDto> getMyBookingsByID(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(bookingService.getMyBookingsById(bookingId));
+    }
+
 
     @GetMapping("/profile")
     @Operation(summary = "Get my profile", description = "Fetches the profile details of the currently logged-in user")
@@ -47,6 +57,12 @@ public class UserController {
     @Operation(summary = "Get all guests", description = "Fetches all guests linked to the current user")
     public ResponseEntity<List<GuestDto>> getAllGuests() {
         return ResponseEntity.ok(guestService.getAllGuests());
+    }
+
+    @GetMapping("/guests/{guestId}")
+    @Operation(summary = "Get all guests", description = "Fetches all guests linked to the current user")
+    public ResponseEntity<GuestDto> getGuestById(@PathVariable Long guestId) {
+        return ResponseEntity.ok(guestService.getGuestById(guestId));
     }
 
     @PostMapping("/guests")

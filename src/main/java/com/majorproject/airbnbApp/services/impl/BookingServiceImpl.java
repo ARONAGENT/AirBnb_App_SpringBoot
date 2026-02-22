@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,8 +60,11 @@ public class BookingServiceImpl implements BookingService {
     private final CheckoutService checkoutService;
     private final PricingService pricingService;
 
+    private static final String BOOKING_CACHE = "bookings";
+
     @Override
     @Transactional
+    @CacheEvict(value = BOOKING_CACHE, allEntries = true)
     public BookingDto initializedBooking(BookingRequest bookingRequest) {
 
         log.info("Initialing booking for hotel : {} , room : {} , Date to : {} to {}",bookingRequest.getHotelId(),bookingRequest.getRoomId(),bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate());
@@ -103,7 +109,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto addGuests(Long bookingId, List<GuestDto> guestIdList) {
+    @CacheEvict(value = BOOKING_CACHE, allEntries = true)
+    public BookingDto addGuests(Long bookingId, List<Long> guestIdList) {
 
         log.info("Adding guests for booking with id: {}", bookingId);
 
@@ -123,12 +130,10 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Booking is not under reserved state, cannot add guests");
         }
 
-        for (GuestDto guestdto: guestIdList) {
-           Guest guest=modelMapper.map(guestdto,Guest.class);
-           guest.setUser(user);
-           guest=guestRepository.save(guest);
-           booking.getGuests().add(guest);
-
+        for (Long guestId: guestIdList) {
+            Guest guest = guestRepository.findById(guestId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: "+guestId));
+            booking.getGuests().add(guest);
         }
 
         booking.setBookingStatus(BookingStatus.GUEST_ADDED);
@@ -138,6 +143,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
+    @CacheEvict(value = BOOKING_CACHE, allEntries = true)
     public String initiatePayments(Long bookingId) {
         Booking booking=bookingRepository.findById(bookingId).orElseThrow(()-> new ResourceNotFoundException("Booking Id Not Found With id"+bookingId));
         User user= getCurrentUser();
@@ -160,6 +166,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
+    @CacheEvict(value = BOOKING_CACHE, allEntries = true)
     public void capturePayment(Event event) {
         if ("checkout.session.completed".equals(event.getType())) {
 //            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
@@ -188,6 +195,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
+    @CacheEvict(value = BOOKING_CACHE, allEntries = true)
     public void cancelBooking(Long bookingId) {
         Booking booking=bookingRepository.findById(bookingId).orElseThrow(()-> new ResourceNotFoundException("Booking Id Not Found With id"+bookingId));
         User user= getCurrentUser();
@@ -220,18 +228,24 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException(e);
         }
     }
-
     @Override
+    @Cacheable(value = BOOKING_CACHE, key = "'hotel_' + #hotelId")
     public List<BookingDto> getAllBookingsByHotelId(Long hotelId) {
+        log.info("Request received to get all bookings for hotelId: {}", hotelId);
+
         Hotel hotel = hotelRepository.findById(hotelId).orElseThrow(() -> new ResourceNotFoundException("Hotel not " +
                 "found with ID: "+hotelId));
         User user = getCurrentUser();
 
-        log.info("Getting all booking for the hotel with ID: {}", hotelId);
+        log.info("Validating ownership for userId: {} and hotelId: {}", user.getId(), hotelId);
 
-        if(!user.equals(hotel.getOwner())) throw new AccessDeniedException("You are not the owner of hotel with id: "+hotelId);
+        if(!user.equals(hotel.getOwner())) {
+            log.error("Access denied for userId: {} on hotelId: {}", user.getId(), hotelId);
+            throw new AccessDeniedException("You are not the owner of hotel with id: "+hotelId);
+        }
 
         List<Booking> bookings = bookingRepository.findByHotel(hotel);
+        log.info("Total bookings fetched for hotelId {}: {}", hotelId, bookings.size());
 
         return bookings.stream()
                 .map((element) -> modelMapper.map(element, BookingDto.class))
@@ -239,14 +253,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Cacheable(value = BOOKING_CACHE, key = "'report_' + #hotelId + '_' + #startDate + '_' + #endDate")
     public HotelReportDto getHotelReport(Long hotelId, LocalDate startDate, LocalDate endDate) {
+        log.info("Generating report for hotelId: {} between {} and {}", hotelId, startDate, endDate);
+
         Hotel hotel = hotelRepository.findById(hotelId).orElseThrow(() -> new ResourceNotFoundException("Hotel not " +
                 "found with ID: "+hotelId));
         User user = getCurrentUser();
 
-        log.info("Generating report for hotel with ID: {}", hotelId);
-
-        if(!user.equals(hotel.getOwner())) throw new AccessDeniedException("You are not the owner of hotel with id: "+hotelId);
+        if(!user.equals(hotel.getOwner())) {
+            log.error("Unauthorized report access attempt by userId: {} for hotelId: {}", user.getId(), hotelId);
+            throw new AccessDeniedException("You are not the owner of hotel with id: "+hotelId);
+        }
 
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
@@ -266,12 +284,16 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal avgRevenue = totalConfirmedBookings == 0 ? BigDecimal.ZERO :
                 totalRevenueOfConfirmedBookings.divide(BigDecimal.valueOf(totalConfirmedBookings), RoundingMode.HALF_UP);
 
+        log.info("Report generated for hotelId: {} | Confirmed: {} | Revenue: {}", hotelId, totalConfirmedBookings, totalRevenueOfConfirmedBookings);
+
         return new HotelReportDto(totalConfirmedBookings, totalRevenueOfConfirmedBookings, avgRevenue);
     }
 
     @Override
+    @Cacheable(value = BOOKING_CACHE, key = "'myBookings_' + T(com.majorproject.airbnbApp.utils.AppUtils).getCurrentUser().getId()")
     public List<BookingDto> getMyBookings() {
         User user = getCurrentUser();
+        log.info("Fetching bookings for userId: {}", user.getId());
 
         return bookingRepository.findByUser(user)
                 .stream()
@@ -284,6 +306,9 @@ public class BookingServiceImpl implements BookingService {
                         .checkInDate(booking.getCheckInDate())
                         .checkOutDate(booking.getCheckOutDate())
                         .roomCount(booking.getRoomCount())
+                        .hotelName(booking.getHotel().getName())
+                        .hotelCity(booking.getHotel().getCity())
+                        .roomType(booking.getRoom().getType())
                         .guests(
                                 booking.getGuests().stream()
                                         .map(guest -> GuestDto.builder()
@@ -298,6 +323,42 @@ public class BookingServiceImpl implements BookingService {
                 ).toList();
     }
 
+    @Override
+    @Cacheable(value = BOOKING_CACHE, key = "'booking_' + #id")
+    public BookingDto getMyBookingsById(Long id) {
+        log.info("Fetching booking by id: {}", id);
+
+        User user = getCurrentUser();
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id : "+id));
+
+        if (!booking.getUser().getId().equals(user.getId())) {
+            log.error("Unauthorized access attempt for bookingId: {} by userId: {}", id, user.getId());
+            throw new RuntimeException("You are not allowed to view this booking");
+        }
+
+        return modelMapper.map(booking,BookingDto.class);
+    }
+
+    @Override
+    @Cacheable(value = BOOKING_CACHE, key = "'status_' + #bookingId")
+    public BookingStatus getBookingStatus(Long bookingId) {
+        log.info("Fetching booking status for bookingId: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
+        );
+        User user = getCurrentUser();
+
+        if (!user.equals(booking.getUser())) {
+            log.error("Unauthorized status check attempt by userId: {} for bookingId: {}", user.getId(), bookingId);
+            throw new UnAuthorisedException("Booking does not belong to this user with id: "+user.getId());
+        }
+
+        log.info("Booking status fetched for bookingId: {} is {}", bookingId, booking.getBookingStatus());
+
+        return booking.getBookingStatus();
+    }
     private Session retrieveSessionFromEvent(Event event) {
         log.info("inside  retrieveSessionFromEvent");
         try {

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingDto {
+public class BookingDto implements Serializable {
 
     private Long id;
     private LocalDate checkInDate;
@@ -27,5 +28,10 @@ public class BookingDto {
     private BookingStatus bookingStatus;
     private Set<GuestDto> guests;
     private BigDecimal amount;
+
+    // ✅ NEW FIELDS
+    private String hotelName;
+    private String hotelCity;
+    private String roomType;
 
 }

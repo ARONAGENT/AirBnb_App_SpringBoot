@@ -2,6 +2,7 @@ package com.majorproject.airbnbApp.controllers;
 
 import com.majorproject.airbnbApp.dtos.BookingDto;
 import com.majorproject.airbnbApp.dtos.BookingRequest;
+import com.majorproject.airbnbApp.dtos.BookingStatusResponseDto;
 import com.majorproject.airbnbApp.dtos.GuestDto;
 import com.majorproject.airbnbApp.services.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 @Tag(name = "Booking", description = "APIs for managing hotel bookings")
@@ -35,7 +37,7 @@ public class HotelBookingController {
     )
     @PostMapping("/{bookingId}/addGuests")
     public ResponseEntity<BookingDto> addGuests(@PathVariable Long bookingId,
-                                                @RequestBody List<GuestDto> guestIdList) {
+                                                @RequestBody List<Long> guestIdList) {
         return ResponseEntity.ok(bookingService.addGuests(bookingId, guestIdList));
     }
 
@@ -58,9 +60,9 @@ public class HotelBookingController {
         bookingService.cancelBooking(bookingId);
         return ResponseEntity.noContent().build();
     }
-//    @GetMapping("/{bookingId}/status")
-//    public ResponseEntity<BookingStatusResponseDto> getBookingStatus(@PathVariable Long bookingId) {
-//        return ResponseEntity.ok(new BookingStatusResponseDto(bookingService.getBookingStatus(bookingId)));
-//    }
+    @GetMapping("/{bookingId}/status")
+    public ResponseEntity<BookingStatusResponseDto> getBookingStatus(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(new BookingStatusResponseDto(bookingService.getBookingStatus(bookingId)));
+    }
 
 }

@@ -12,13 +12,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 @Tag(name = "Hotel", description = "Admin APIs for managing hotels,bookings and their Reports")
 @RestController
-@RequestMapping(path = "admin/hotel")
+@RequestMapping(path = "/admin/hotel")
+//@PreAuthorize("hasAuthority('HOTEL_MANAGER')")
 @RequiredArgsConstructor
 @Slf4j
 public class HotelController {
