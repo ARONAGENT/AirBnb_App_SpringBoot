@@ -1,7 +1,7 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.InventoryDto;
-import com.majorproject.airbnbApp.dtos.UpdateInventoryRequestDto;
+import com.majorproject.airbnbApp.dtos.roomAndInventory.InventoryDto;
+import com.majorproject.airbnbApp.dtos.roomAndInventory.UpdateInventoryRequestDto;
 import com.majorproject.airbnbApp.services.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

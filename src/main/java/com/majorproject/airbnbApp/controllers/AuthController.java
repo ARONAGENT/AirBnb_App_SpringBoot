@@ -1,9 +1,9 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.LoginDto;
-import com.majorproject.airbnbApp.dtos.LoginResponseDto;
-import com.majorproject.airbnbApp.dtos.SignUpRequestDto;
-import com.majorproject.airbnbApp.dtos.UserDto;
+import com.majorproject.airbnbApp.dtos.auth.LoginDto;
+import com.majorproject.airbnbApp.dtos.auth.LoginResponseDto;
+import com.majorproject.airbnbApp.dtos.auth.SignUpRequestDto;
+import com.majorproject.airbnbApp.dtos.user.UserDto;
 import com.majorproject.airbnbApp.security.Auth_Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

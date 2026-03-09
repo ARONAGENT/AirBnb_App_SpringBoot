@@ -44,12 +44,11 @@ public interface InventoryRepository extends JpaRepository<Inventory,Long> {
 
 
     @Query("""
-            SELECT i
-            from Inventory i
-            WHERE i.room.id = :roomId
-            AND i.date BETWEEN :startDate AND :endDate
-            AND (i.totalCount - i.bookedCount - i.reservedCount ) >= :roomsCount
-            """)
+    SELECT i FROM Inventory i
+    WHERE i.room.id = :roomId
+    AND i.date >= :startDate AND i.date < :endDate
+    AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount
+    """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Inventory> findAndLockAvailableInventory(
             @Param("roomId") Long roomId,
@@ -91,19 +90,21 @@ public interface InventoryRepository extends JpaRepository<Inventory,Long> {
                         @Param("numberOfRooms") int numberOfRooms);
 
 
+    // 2. findAndLockReservedInventory
     @Query("""
-                SELECT i
-                FROM Inventory i
-                WHERE i.room.id = :roomId
-                  AND i.date BETWEEN :startDate AND :endDate
-                  AND (i.totalCount - i.bookedCount) >= :numberOfRooms
-                  AND i.closed = false
-            """)
+    SELECT i FROM Inventory i
+    WHERE i.room.id = :roomId
+    AND i.date >= :startDate AND i.date < :endDate
+    AND (i.totalCount - i.bookedCount) >= :numberOfRooms
+    AND i.closed = false
+""")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<Inventory> findAndLockReservedInventory(@Param("roomId") Long roomId,
-                                                 @Param("startDate") LocalDate startDate,
-                                                 @Param("endDate") LocalDate endDate,
-                                                 @Param("numberOfRooms") int numberOfRooms);
+    List<Inventory> findAndLockReservedInventory(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("numberOfRooms") int numberOfRooms
+    );
 
     @Modifying
     @Query("""

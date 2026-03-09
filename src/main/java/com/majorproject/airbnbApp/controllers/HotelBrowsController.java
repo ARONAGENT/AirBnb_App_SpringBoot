@@ -1,9 +1,8 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.HotelDto;
-import com.majorproject.airbnbApp.dtos.HotelInfoDto;
-import com.majorproject.airbnbApp.dtos.HotelPriceDto;
-import com.majorproject.airbnbApp.dtos.HotelSearchRequest;
+import com.majorproject.airbnbApp.dtos.hotel.HotelInfoDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelPriceDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelSearchRequest;
 import com.majorproject.airbnbApp.services.HotelService;
 import com.majorproject.airbnbApp.services.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Hotel Searching", description = "APIs for Searching hotels")
 @RestController

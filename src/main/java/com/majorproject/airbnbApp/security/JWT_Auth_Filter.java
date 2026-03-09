@@ -1,6 +1,5 @@
 package com.majorproject.airbnbApp.security;
 
-import com.majorproject.airbnbApp.dtos.UserDto;
 import com.majorproject.airbnbApp.entities.User;
 import com.majorproject.airbnbApp.services.UserService;
 import io.jsonwebtoken.JwtException;
@@ -20,7 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
-import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor

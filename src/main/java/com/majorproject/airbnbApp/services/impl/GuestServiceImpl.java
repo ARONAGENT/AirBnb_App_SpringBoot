@@ -1,6 +1,6 @@
 package com.majorproject.airbnbApp.services.impl;
 
-import com.majorproject.airbnbApp.dtos.GuestDto;
+import com.majorproject.airbnbApp.dtos.booking.GuestDto;
 import com.majorproject.airbnbApp.entities.Guest;
 import com.majorproject.airbnbApp.entities.User;
 import com.majorproject.airbnbApp.repositories.GuestRepository;

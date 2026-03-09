@@ -1,8 +1,8 @@
 package com.majorproject.airbnbApp.security;
 
-import com.majorproject.airbnbApp.dtos.LoginDto;
-import com.majorproject.airbnbApp.dtos.SignUpRequestDto;
-import com.majorproject.airbnbApp.dtos.UserDto;
+import com.majorproject.airbnbApp.dtos.auth.LoginDto;
+import com.majorproject.airbnbApp.dtos.auth.SignUpRequestDto;
+import com.majorproject.airbnbApp.dtos.user.UserDto;
 import com.majorproject.airbnbApp.entities.User;
 import com.majorproject.airbnbApp.entities.enums.Role;
 import com.majorproject.airbnbApp.exceptions.ResourceNotFoundException;

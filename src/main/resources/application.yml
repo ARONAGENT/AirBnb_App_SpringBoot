@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: airbnbApp
+
+  datasource:
+    url: ${db_url}
+    username: ${db_username}
+    password: ${db_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  data:
+    redis:
+      host: ${redis_host}
+      port: ${redis_port}
+      password: ${redis_password}
+
+  ai:
+    openai:
+      api-key: ${api_key}
+      chat:
+        options:
+          model: gpt-4o-mini
+          stream-usage: false
+      embedding:
+        options:
+          model: text-embedding-3-small
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+            table-name: user_chat_memory
+
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1
+
+jwt:
+  secretKey: ${jwt_secretKey}
+
+frontend:
+  url: http://localhost:8080
+
+stripe:
+  secret:
+    key: ${stripe_secretKey}
+  webhook:
+    secret: ${stripeWebhook_secret}
+
+logging:
+  level:
+    org.springframework.ai.chat.client: DEBUG
+
+
+
+

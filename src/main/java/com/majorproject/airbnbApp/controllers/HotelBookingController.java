@@ -1,18 +1,15 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.BookingDto;
-import com.majorproject.airbnbApp.dtos.BookingRequest;
-import com.majorproject.airbnbApp.dtos.BookingStatusResponseDto;
-import com.majorproject.airbnbApp.dtos.GuestDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingRequest;
+import com.majorproject.airbnbApp.dtos.booking.BookingStatusResponseDto;
 import com.majorproject.airbnbApp.services.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 @Tag(name = "Booking", description = "APIs for managing hotel bookings")

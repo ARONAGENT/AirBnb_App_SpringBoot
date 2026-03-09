@@ -3,6 +3,7 @@ package com.majorproject.airbnbApp.repositories;
 import com.majorproject.airbnbApp.entities.Booking;
 import com.majorproject.airbnbApp.entities.Hotel;
 import com.majorproject.airbnbApp.entities.User;
+import com.majorproject.airbnbApp.entities.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,7 @@ public interface BookingRepository extends JpaRepository<Booking,Long> {
     List<Booking> findByHotelAndCreatedAtBetween(Hotel hotel, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     List<Booking> findByUser(User user);
+    List<Booking> findByBookingStatus(BookingStatus bookingStatus);
+
+    long countByUserIdAndBookingStatus(Long userId, BookingStatus bookingStatus);
 }

@@ -1,8 +1,8 @@
 package com.majorproject.airbnbApp.services;
 
-import com.majorproject.airbnbApp.dtos.BookingDto;
-import com.majorproject.airbnbApp.dtos.BookingRequest;
-import com.majorproject.airbnbApp.dtos.HotelReportDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingRequest;
+import com.majorproject.airbnbApp.dtos.hotel.HotelReportDto;
 import com.majorproject.airbnbApp.entities.enums.BookingStatus;
 import com.stripe.model.Event;
 

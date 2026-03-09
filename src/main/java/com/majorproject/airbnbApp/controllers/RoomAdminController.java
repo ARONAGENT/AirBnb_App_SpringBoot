@@ -1,6 +1,6 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.RoomDto;
+import com.majorproject.airbnbApp.dtos.roomAndInventory.RoomDto;
 import com.majorproject.airbnbApp.services.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

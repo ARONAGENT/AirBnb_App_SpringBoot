@@ -1,7 +1,7 @@
 package com.majorproject.airbnbApp.services.impl;
 
-import com.majorproject.airbnbApp.dtos.ProfileUpdateRequestDto;
-import com.majorproject.airbnbApp.dtos.UserDto;
+import com.majorproject.airbnbApp.dtos.user.ProfileUpdateRequestDto;
+import com.majorproject.airbnbApp.dtos.user.UserDto;
 import com.majorproject.airbnbApp.entities.User;
 import com.majorproject.airbnbApp.exceptions.ResourceNotFoundException;
 import com.majorproject.airbnbApp.repositories.UserRepository;
@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,6 +30,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final ModelMapper modelMapper;
 
     @Override
+    @Cacheable(value = USER_CACHE , key="#id")
     public User getUserById(Long id) {
         log.info("Request received to fetch user by id: {}", id);
         User user = userRepository.findById(id)
@@ -41,11 +41,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional
-    @CachePut(value = USER_CACHE, key = "#result.id")
+    @CacheEvict(
+            value = USER_CACHE,
+            key = "'myProfile_' + T(com.majorproject.airbnbApp.utils.AppUtils).getCurrentUser().getId()"
+    )
     public void updateProfile(ProfileUpdateRequestDto profileUpdateRequestDto) {
         User user = getCurrentUser();
         log.info("Updating profile for user id: {}", user.getId());
-
         if(profileUpdateRequestDto.getDateOfBirth() != null) {
             user.setDateOfBirth(profileUpdateRequestDto.getDateOfBirth());
             log.info("Updated dateOfBirth for user id: {}", user.getId());

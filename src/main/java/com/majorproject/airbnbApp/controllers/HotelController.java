@@ -1,10 +1,11 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.BookingDto;
-import com.majorproject.airbnbApp.dtos.HotelDto;
-import com.majorproject.airbnbApp.dtos.HotelReportDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelReportDto;
 import com.majorproject.airbnbApp.services.BookingService;
 import com.majorproject.airbnbApp.services.HotelService;
+import com.majorproject.airbnbApp.services.impl.PricingUpdateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -12,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -39,6 +39,15 @@ public class HotelController {
         log.info("Hotel created successfully with ID: {}", createdHotel.getId());
         return new ResponseEntity<>(createdHotel, HttpStatus.CREATED);
     }
+
+    private final PricingUpdateService pricingUpdateService;
+
+//    @PostMapping("/dp/apply")
+//    public ResponseEntity<MessageDto> applyDynamicPricing() {
+//        log.info("Manual dynamic pricing update triggered via API");
+//        pricingUpdateService.updatePrices();
+//        return ResponseEntity.ok(new MessageDto("Dynamic pricing applied successfully to all rooms."));
+//    }
 
     @Operation(
             summary = "Get a hotel by ID",

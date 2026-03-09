@@ -2,10 +2,11 @@ package com.majorproject.airbnbApp.services.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.majorproject.airbnbApp.dtos.BookingDto;
-import com.majorproject.airbnbApp.dtos.BookingRequest;
-import com.majorproject.airbnbApp.dtos.GuestDto;
-import com.majorproject.airbnbApp.dtos.HotelReportDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingDto;
+import com.majorproject.airbnbApp.dtos.booking.BookingRequest;
+import com.majorproject.airbnbApp.dtos.booking.GuestDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelReportDto;
+import com.majorproject.airbnbApp.dtos.xpdtos.XpResponseDto;
 import com.majorproject.airbnbApp.entities.*;
 import com.majorproject.airbnbApp.entities.enums.BookingStatus;
 import com.majorproject.airbnbApp.exceptions.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import com.majorproject.airbnbApp.exceptions.UnAuthorisedException;
 import com.majorproject.airbnbApp.repositories.*;
 import com.majorproject.airbnbApp.services.BookingService;
 import com.majorproject.airbnbApp.services.CheckoutService;
+import com.majorproject.airbnbApp.services.XpService;
 import com.majorproject.airbnbApp.strategy.PricingService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -36,10 +38,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +59,7 @@ public class BookingServiceImpl implements BookingService {
     private final CheckoutService checkoutService;
     private final PricingService pricingService;
 
+    private final XpService xpService;
     private static final String BOOKING_CACHE = "bookings";
 
     @Override
@@ -78,9 +78,6 @@ public class BookingServiceImpl implements BookingService {
 
         List<Inventory> inventoryList=inventoryRepository.findAndLockAvailableInventory(room.getId(),
                 bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate(),bookingRequest.getRoomsCount());
-
-        long daysCount= ChronoUnit.DAYS.between(bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate())+1;
-
 
         // Reserve the room/ update the booked count of inventories
         inventoryRepository.initBooking(room.getId(), bookingRequest.getCheckInDate(),
@@ -155,8 +152,11 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Booking has already expired");
         }
 
-      String sessionUrl=  checkoutService.getCheckOutSession(booking,frontendUrl+"/payments/success",frontendUrl+"/payments/failure");
-
+        String sessionUrl = checkoutService.getCheckOutSession(
+                booking,
+                frontendUrl + "/payments/success?bookingId=" + bookingId,   // ✅
+                frontendUrl + "/payments/failure?bookingId=" + bookingId
+        );
         booking.setBookingStatus(BookingStatus.PAYMENT_PENDING);
         bookingRepository.save(booking);
 
@@ -169,14 +169,13 @@ public class BookingServiceImpl implements BookingService {
     @CacheEvict(value = BOOKING_CACHE, allEntries = true)
     public void capturePayment(Event event) {
         if ("checkout.session.completed".equals(event.getType())) {
-//            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
             Session session = retrieveSessionFromEvent(event);
             if (session == null) return;
 
             String sessionId = session.getId();
             Booking booking =
                     bookingRepository.findByPaymentSessionId(sessionId).orElseThrow(() ->
-                            new ResourceNotFoundException("Booking not found for session ID: "+sessionId));
+                            new ResourceNotFoundException("Booking not found for session ID: " + sessionId));
 
             booking.setBookingStatus(BookingStatus.CONFIRMED);
             bookingRepository.save(booking);
@@ -186,6 +185,23 @@ public class BookingServiceImpl implements BookingService {
 
             inventoryRepository.confirmBooking(booking.getRoom().getId(), booking.getCheckInDate(),
                     booking.getCheckOutDate(), booking.getRoomCount());
+
+            // ✅ AWARD XP after confirmed payment
+            try {
+                XpResponseDto xpResult = xpService.awardBookingXp(
+                        booking.getUser().getId(),
+                        booking.getHotel().getCity(),     // placeName = hotel city
+                        booking.getHotel().getName()       // hotelName
+                );
+                log.info("XP awarded to userId: {} | XP earned: {} | Level: {} | LeveledUp: {}",
+                        booking.getUser().getId(),
+                        xpResult.getXpEarned(),
+                        xpResult.getLevel(),
+                        xpResult.isLeveledUp());
+            } catch (Exception e) {
+                // Non-critical — don't fail the booking if XP award fails
+                log.error("Failed to award XP for bookingId: {} | Error: {}", booking.getId(), e.getMessage());
+            }
 
             log.info("Successfully confirmed the booking for Booking ID: {}", booking.getId());
         } else {

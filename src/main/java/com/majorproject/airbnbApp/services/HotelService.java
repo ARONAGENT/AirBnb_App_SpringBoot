@@ -1,7 +1,7 @@
 package com.majorproject.airbnbApp.services;
 
-import com.majorproject.airbnbApp.dtos.HotelDto;
-import com.majorproject.airbnbApp.dtos.HotelInfoDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelDto;
+import com.majorproject.airbnbApp.dtos.hotel.HotelInfoDto;
 
 import java.util.List;
 

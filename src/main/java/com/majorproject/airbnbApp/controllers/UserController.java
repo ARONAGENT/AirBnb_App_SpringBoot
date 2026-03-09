@@ -1,12 +1,15 @@
 package com.majorproject.airbnbApp.controllers;
 
-import com.majorproject.airbnbApp.dtos.BookingDto;
-import com.majorproject.airbnbApp.dtos.GuestDto;
-import com.majorproject.airbnbApp.dtos.ProfileUpdateRequestDto;
-import com.majorproject.airbnbApp.dtos.UserDto;
+import com.majorproject.airbnbApp.dtos.*;
+import com.majorproject.airbnbApp.dtos.booking.BookingDto;
+import com.majorproject.airbnbApp.dtos.booking.GuestDto;
+import com.majorproject.airbnbApp.dtos.user.ProfileUpdateRequestDto;
+import com.majorproject.airbnbApp.dtos.user.UserDto;
+import com.majorproject.airbnbApp.services.AiService;
 import com.majorproject.airbnbApp.services.BookingService;
 import com.majorproject.airbnbApp.services.GuestService;
 import com.majorproject.airbnbApp.services.UserService;
+import com.majorproject.airbnbApp.services.impl.AiServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,16 @@ public class UserController {
     private final UserService userService;
     private final BookingService bookingService;
     private final GuestService guestService;
+
+    private final AiService aiService;
+
+    @PostMapping("/chat")
+    @Operation(summary = "Api for Ai Ask Ai", description = "Gives Info about what u want just like chatgpt")
+    public ResponseEntity<MessageDto> getAnalysisOfReports(@RequestBody String Msg){
+        String ans=aiService.askAi(Msg);
+        System.out.println(ans);
+        return ResponseEntity.ok(new MessageDto(ans));
+    }
 
     @PatchMapping("/profile")
     @Operation(summary = "Update user profile", description = "Updates the profile details of the currently logged-in user")
